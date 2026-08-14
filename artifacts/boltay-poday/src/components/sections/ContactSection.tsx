@@ -1,18 +1,40 @@
 import { motion } from 'framer-motion';
-import { Send, Mail, MapPin } from 'lucide-react';
+import { Send, Mail, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 
 export function ContactSection() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.id]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // We would reset form or show success message here
-    }, 1500);
+    setStatus('sending');
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong.');
+      }
+
+      setStatus('success');
+      setForm({ name: '', email: '', message: '' });
+    } catch (err: any) {
+      setStatus('error');
+      setErrorMsg(err.message || 'Failed to send. Please try again.');
+    }
   };
 
   return (
@@ -79,53 +101,94 @@ export function ContactSection() {
           {/* Form Side */}
           <div className="w-full md:w-7/12 p-12 lg:p-16 bg-white">
             <h4 className="text-2xl font-bold text-foreground mb-8">Send a Message</h4>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">Name</label>
-                <input 
-                  type="text" 
-                  id="name" 
-                  required
-                  className="w-full px-5 py-4 bg-sidebar border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
-                  placeholder="Ahmad Khan"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email Address</label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  required
-                  className="w-full px-5 py-4 bg-sidebar border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
-                  placeholder="ahmad@example.com"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">Message</label>
-                <textarea 
-                  id="message" 
-                  rows={4}
-                  required
-                  className="w-full px-5 py-4 bg-sidebar border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground resize-none"
-                  placeholder="How can we help you?"
-                />
-              </div>
-              
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full py-4 bg-primary text-white rounded-xl font-bold text-lg hover:bg-[#049347] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-70"
+
+            {status === 'success' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center text-center py-12 gap-4"
               >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">Sending...</span>
-                ) : (
-                  <>Send Message <Send className="w-5 h-5" /></>
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-primary" />
+                </div>
+                <h5 className="text-xl font-bold text-foreground">Message Sent!</h5>
+                <p className="text-gray-500 max-w-xs">
+                  We've received your message and will get back to you at <span className="font-medium text-foreground">{form.email || 'your email'}</span> soon.
+                </p>
+                <button
+                  onClick={() => setStatus('idle')}
+                  className="mt-4 px-6 py-2.5 rounded-full border border-primary text-primary text-sm font-semibold hover:bg-green-50 transition-colors"
+                >
+                  Send another message
+                </button>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">Name</label>
+                  <input 
+                    type="text" 
+                    id="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-5 py-4 bg-sidebar border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
+                    placeholder="Ahmad Khan"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email Address</label>
+                  <input 
+                    type="email" 
+                    id="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-5 py-4 bg-sidebar border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground"
+                    placeholder="ahmad@example.com"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">Message</label>
+                  <textarea 
+                    id="message"
+                    value={form.message}
+                    onChange={handleChange}
+                    rows={4}
+                    required
+                    className="w-full px-5 py-4 bg-sidebar border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground resize-none"
+                    placeholder="How can we help you?"
+                  />
+                </div>
+
+                {status === 'error' && (
+                  <div className="flex items-center gap-2 text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {errorMsg}
+                  </div>
                 )}
-              </button>
-            </form>
+                
+                <button 
+                  type="submit" 
+                  disabled={status === 'sending'}
+                  className="w-full py-4 bg-primary text-white rounded-xl font-bold text-lg hover:bg-[#049347] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-70"
+                >
+                  {status === 'sending' ? (
+                    <>
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      Sending...
+                    </>
+                  ) : (
+                    <>Send Message <Send className="w-5 h-5" /></>
+                  )}
+                </button>
+              </form>
+            )}
           </div>
           
         </div>
