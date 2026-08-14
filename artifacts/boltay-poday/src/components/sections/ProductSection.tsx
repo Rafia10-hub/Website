@@ -68,7 +68,7 @@ export function ProductSection() {
             Meet the Boltay Poday Device
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Our IoT hardware prototype — handcrafted at LCWU — monitoring temperature, humidity, 
+            Our IoT hardware prototype — built by hand, powered by passion — monitoring temperature, humidity, 
             and soil moisture in real time, paired with the <span className="text-primary font-semibold">Digital Maali</span> mobile app.
           </p>
         </motion.div>
