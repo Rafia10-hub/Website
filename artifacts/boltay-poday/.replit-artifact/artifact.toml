@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Boltay Poday"
+description = "Professional animated landing website for Boltay Poday — a smart plant health IoT startup. Features parallax scroll, product section showcasing their sensor device (Temp/Humidity/Moisture), full startup journey from university project to pitching events, and a mobile app section."
+version = "1.0.0"
+id = "artifacts/boltay-poday"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19833
+
+[services.development]
+run = "pnpm --filter @workspace/boltay-poday run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/boltay-poday", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/boltay-poday/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19833"
+BASE_PATH = "/"
