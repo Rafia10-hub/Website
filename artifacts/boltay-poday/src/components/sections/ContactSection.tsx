@@ -11,14 +11,24 @@ export function ContactSection() {
     setForm((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`Message from ${form.name} — Boltay Poday Website`);
-    const body = encodeURIComponent(
-      `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
-    );
-    window.location.href = `mailto:boltaypoday@gmail.com?subject=${subject}&body=${body}`;
-    setStatus('success');
+    setStatus('sending');
+    setErrorMsg('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+      setStatus('success');
+      setForm({ name: '', email: '', message: '' });
+    } catch (err: any) {
+      setStatus('error');
+      setErrorMsg(err.message || 'Failed to send. Please try again.');
+    }
   };
 
   return (
