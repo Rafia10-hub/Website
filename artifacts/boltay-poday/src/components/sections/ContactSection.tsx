@@ -11,37 +11,14 @@ export function ContactSection() {
     setForm((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('sending');
-    setErrorMsg('');
-
-    try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: import.meta.env.VITE_WEB3FORMS_KEY,
-          subject: `New message from ${form.name} — Boltay Poday Website`,
-          from_name: 'Boltay Poday Website',
-          name: form.name,
-          email: form.email,
-          message: form.message,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!data.success) {
-        throw new Error(data.message || 'Something went wrong.');
-      }
-
-      setStatus('success');
-      setForm({ name: '', email: '', message: '' });
-    } catch (err: any) {
-      setStatus('error');
-      setErrorMsg(err.message || 'Failed to send. Please try again.');
-    }
+    const subject = encodeURIComponent(`Message from ${form.name} — Boltay Poday Website`);
+    const body = encodeURIComponent(
+      `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
+    );
+    window.location.href = `mailto:boltaypoday@gmail.com?subject=${subject}&body=${body}`;
+    setStatus('success');
   };
 
   return (
