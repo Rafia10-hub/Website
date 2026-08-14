@@ -17,16 +17,23 @@ export function ContactSection() {
     setErrorMsg('');
 
     try {
-      const res = await fetch('/api/contact', {
+      const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: import.meta.env.VITE_WEB3FORMS_KEY,
+          subject: `New message from ${form.name} — Boltay Poday Website`,
+          from_name: 'Boltay Poday Website',
+          name: form.name,
+          email: form.email,
+          message: form.message,
+        }),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong.');
+      if (!data.success) {
+        throw new Error(data.message || 'Something went wrong.');
       }
 
       setStatus('success');

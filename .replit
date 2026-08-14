@@ -18,3 +18,8 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+VITE_WEB3FORMS_KEY = "3a9c4aa5-95cc-4f0a-b79d-ffe5ad6a156c"
